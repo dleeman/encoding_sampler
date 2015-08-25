@@ -497,9 +497,26 @@ describe Sampler do
         
         it 'uses difference_end value specified in options hash' do
           @sampler.diffed_sample('ENCODING1').join.should include '<end>'
-        end        
-        
+        end
       end
+
+      context 'with custom :match_start, :match_end options' do
+        before(:each) do
+          @sampler = Sampler.new(
+            @filename, %w(ENCODING1 LIKE_ENCODING1 UNLIKE_ENCODING1),
+            match_start: '<mstart>', match_end: '<mend>'
+          )
+        end
+
+        it 'uses difference_start value specified in options hash' do
+          @sampler.diffed_sample('ENCODING1').join.should include '<mstart>'
+        end
+
+        it 'uses difference_end value specified in options hash' do
+          @sampler.diffed_sample('ENCODING1').join.should include '<mend>'
+        end
+      end
+
 
       context 'with custom :diff_callbacks_class' do
         class CustomDiffCallbacks < DiffCallbacks

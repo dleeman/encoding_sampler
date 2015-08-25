@@ -29,6 +29,8 @@ module EncodingSampler
       options ||= {}
       @difference_start = options[:difference_start] ||= '<span class="difference">'
       @difference_end = options[:difference_end] ||= '</span>'
+      @match_start = options[:match_start] ||= ''
+      @match_end = options[:match_end] ||= ''
     end
 
     def clear_buffer
@@ -62,7 +64,10 @@ module EncodingSampler
    
     def output_matched(element)
       element = CGI.escapeHTML(element.chomp)
-      @output << "#{element}" unless element.empty?
+      return if element.empty?
+      @output << "#{@match_start}#{element}#{@match_end}"
+      # Join adjacent matching sections
+      @output.gsub "#{@match_start}#{@match_end}", ''
     end
   
     def output_changed(element)
