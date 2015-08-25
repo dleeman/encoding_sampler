@@ -67,7 +67,7 @@ module EncodingSampler
       return if element.empty?
       @output << "#{@match_start}#{element}#{@match_end}"
       # Join adjacent matching sections
-      @output.gsub "#{@match_end}#{@match_start}", ''
+      @output.gsub! "#{@match_end}#{@match_start}", ''
     end
   
     def output_changed(element)
@@ -75,7 +75,7 @@ module EncodingSampler
       return if element.empty?   
       @output << "#{@difference_start}#{element}#{@difference_end}"
       # Join adjacent changed sections
-      @output.gsub "#{element}#{@difference_end}#{@difference_start}", ''
+      @output.gsub! "#{@difference_end}#{@difference_start}", ''
     end
      
   end
