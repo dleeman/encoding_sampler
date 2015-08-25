@@ -133,7 +133,6 @@ module EncodingSampler
     def diffed_strings(array_of_strings, line_number)
       lcs = array_of_strings.inject {|intermediate_lcs, string| Diff::LCS.LCS(intermediate_lcs, string).join }
       callbacks = diff_callbacks
-      puts line_number
       array_of_strings.map do |string|
         callbacks.clear_buffer
         callbacks.line_number = line_number
