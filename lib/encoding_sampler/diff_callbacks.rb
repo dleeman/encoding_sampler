@@ -30,7 +30,11 @@ module EncodingSampler
       @difference_start = options[:difference_start] ||= '<span class="difference">'
       @difference_end = options[:difference_end] ||= '</span>'
     end
-  
+
+    def clear_buffer
+      @output.clear
+    end
+
     # Called with both strings are the same
     def match(event)
       output_matched event.old_element
@@ -44,6 +48,10 @@ module EncodingSampler
     # Called when there is a substring in B that isn't in A
     def discard_b(event)
       output_changed event.new_element
+    end
+
+    def result
+      @output.dup
     end
     
   private

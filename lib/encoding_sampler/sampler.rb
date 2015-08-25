@@ -119,6 +119,11 @@ module EncodingSampler
       encoded_string.valid_encoding? ? encoded_string.encode('UTF-8', invalid: :replace, undef: :replace, replace: '?') : nil
     end
 
+    def diff_callbacks
+      callbacks_class = @diff_options[:diff_callbacks_class] || DiffCallbacks
+      callbacks_class.new('', @diff_options)
+    end
+
     def multi_decode_binary_string(binary_string, encodings)
       decoded_lines = {}
       encodings.each {|encoding| decoded_lines[encoding] = decode_binary_string(binary_string, encoding)}
@@ -127,11 +132,11 @@ module EncodingSampler
 
     def diffed_strings(array_of_strings)
       lcs = array_of_strings.inject {|intermediate_lcs, string| Diff::LCS.LCS(intermediate_lcs, string).join }
-      callbacks = DiffCallbacks.new(diff_output = '', @diff_options)
+      callbacks = diff_callbacks
       array_of_strings.map do |string|
-        diff_output.clear
+        callbacks.clear_buffer
         Diff::LCS.traverse_sequences(lcs, string, callbacks)
-        diff_output.dup
+        callbacks.result
       end
     end
 

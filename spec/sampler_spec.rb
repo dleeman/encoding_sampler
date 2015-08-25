@@ -94,10 +94,10 @@ describe Sampler do
     describe '#unique_valid_encoding_groups' do
       before(:each) do
         Sampler.any_instance.stub(:decode_binary_string) do |*args|
-          if ['ENCODING1', 'LIKE_ENCODING1'].include? args[1]
-            args[0]
+          if ['ENCODING1', 'LIKE_ENCODING1'].include? args[2]
+            args[1]
           else 
-            args[0].gsub(/t/, 'T')
+            args[1].gsub(/t/, 'T')
           end
         end
       end
@@ -203,10 +203,10 @@ describe Sampler do
     describe '#sample' do
       before(:each) do
         Sampler.any_instance.stub(:decode_binary_string) do |*args|
-          if ['ENCODING1', 'LIKE_ENCODING1'].include? args[1]
-            args[0]
+          if ['ENCODING1', 'LIKE_ENCODING1'].include? args[2]
+            args[1]
           else 
-            args[0].gsub(/t/, 'T')
+            args[1].gsub(/t/, 'T')
           end
         end
       end
@@ -282,10 +282,10 @@ describe Sampler do
     describe '#samples' do
       before(:each) do
         Sampler.any_instance.stub(:decode_binary_string) do |*args|
-          if ['ENCODING1', 'LIKE_ENCODING1'].include? args[1]
-            args[0]
+          if ['ENCODING1', 'LIKE_ENCODING1'].include? args[2]
+            args[1]
           else 
-            args[0].gsub(/t/, 'T')
+            args[1].gsub(/t/, 'T')
           end
         end
       end
@@ -350,11 +350,11 @@ describe Sampler do
     describe '#best_encodings' do
       before(:each) do
        Sampler.any_instance.stub(:decode_binary_string) do |*args|
-          case args[1]
-          when 'SHORTEST_ENCODING' then args[0]
-          when 'LIKE_SHORTEST_ENCODING' then args[0].reverse # same length and different is all that matters
+          case args[2]
+          when 'SHORTEST_ENCODING' then args[1]
+          when 'LIKE_SHORTEST_ENCODING' then args[1].reverse # same length and different is all that matters
           when 'INVALID_ENCODING' then nil
-          else args[0].gsub(/t/, 'T&#') # force longer faked encoding for letter 't'
+          else args[1].gsub(/t/, 'T&#') # force longer faked encoding for letter 't'
           end
         end
       end
@@ -418,10 +418,10 @@ describe Sampler do
     describe 'diffed_sample' do
       before(:each) do
         Sampler.any_instance.stub(:decode_binary_string) do |*args|
-          if ['ENCODING1', 'LIKE_ENCODING1'].include? args[1]
-            args[0]
+          if ['ENCODING1', 'LIKE_ENCODING1'].include? args[2]
+            args[1]
           else 
-            args[0].gsub(/t/, 'T')
+            args[1].gsub(/t/, 'T')
           end
         end
         @sampler = Sampler.new(@filename, %w(ENCODING1 LIKE_ENCODING1 UNLIKE_ENCODING1))          
@@ -454,10 +454,10 @@ describe Sampler do
     describe 'diffed_samples' do
       before(:each) do
         Sampler.any_instance.stub(:decode_binary_string) do |*args|
-          if ['ENCODING1', 'LIKE_ENCODING1'].include? args[1]
-            args[0]
+          if ['ENCODING1', 'LIKE_ENCODING1'].include? args[2]
+            args[1]
           else 
-            args[0].gsub(/t/, 'T')
+            args[1].gsub(/t/, 'T')
           end
         end
       end
@@ -499,6 +499,37 @@ describe Sampler do
           @sampler.diffed_sample('ENCODING1').join.should include '<end>'
         end        
         
+      end
+
+      context 'with custom :diff_callbacks_class' do
+        class CustomDiffCallbacks < DiffCallbacks
+          def match(_event)
+            @output << "match "
+          end
+
+          def discard_a(_event)
+            @output << "discard_a "
+          end
+
+          def discard_b(_event)
+            @output << "discard_b "
+          end
+        end
+
+        before(:each) do
+          @sampler = Sampler.new(
+            @filename, %w(ENCODING1 LIKE_ENCODING1 UNLIKE_ENCODING1),
+            diff_callbacks_class: CustomDiffCallbacks
+          )
+        end
+
+        it 'calls the match method of the provided class' do
+          @sampler.diffed_sample('ENCODING1').join.should include 'match'
+        end
+
+        it 'calls the discard_b method of the provided class' do
+          @sampler.diffed_sample('ENCODING1').join.should include 'discard_b'
+        end
       end
     
     end    
