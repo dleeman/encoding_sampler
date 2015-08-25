@@ -1,14 +1,10 @@
 require "cgi"
+require 'encoding_sampler/diff_hunk'
 
 module EncodingSampler
   
   # Simple formatter to override Diff::LCS::DiffCallbacks in diff-lcs Gem to generate diffed output.
   class DiffCallbacks
-
-    attr_accessor :output
-    # @!attribute output
-    #   @return [String] Storage for the resultant diffed output.
-
     attr_reader :difference_start
     # @!attribute [r] difference_start
     #   @return [String] The string inserted in the diff results __before__ a segment where the samples differ.
@@ -24,8 +20,8 @@ module EncodingSampler
     #   Valid keys are :difference_start and :difference_end.
     # @see #difference_start
     # @see #difference_end
-    def initialize(output, options = {})
-      @output = output
+    def initialize(options = {})
+      @diff_hunks = []
       options ||= {}
       @difference_start = options[:difference_start] ||= '<span class="difference">'
       @difference_end = options[:difference_end] ||= '</span>'
@@ -34,7 +30,7 @@ module EncodingSampler
     end
 
     def clear_buffer
-      @output.clear
+      @diff_hunks.clear
     end
 
     def line_number=(val)
@@ -57,7 +53,7 @@ module EncodingSampler
     end
 
     def result
-      @output.dup
+      @diff_hunks.map { |h| h.result }.join ''
     end
     
   private
@@ -65,19 +61,22 @@ module EncodingSampler
     def output_matched(element)
       element = CGI.escapeHTML(element.chomp)
       return if element.empty?
-      @output << "#{@match_start}#{element}#{@match_end}"
-      # Join adjacent matching sections
-      @output.gsub! "#{@match_end}#{@match_start}", ''
+      unless (hunk = @diff_hunks.last) && hunk.type == :match
+        hunk = DiffHunk.new :match, @match_start, @match_end
+        @diff_hunks << hunk
+      end
+      hunk << element
     end
   
     def output_changed(element)
       element = CGI.escapeHTML(element.chomp)
-      return if element.empty?   
-      @output << "#{@difference_start}#{element}#{@difference_end}"
-      # Join adjacent changed sections
-      @output.gsub! "#{@difference_end}#{@difference_start}", ''
+      return if element.empty?
+      unless (hunk = @diff_hunks.last) && hunk.type == :difference
+        hunk = DiffHunk.new :difference, @difference_start, @difference_end
+        @diff_hunks << hunk
+      end
+      hunk << element
     end
      
   end
-
 end

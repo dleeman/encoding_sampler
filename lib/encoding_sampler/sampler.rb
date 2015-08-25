@@ -121,7 +121,7 @@ module EncodingSampler
 
     def diff_callbacks
       callbacks_class = @diff_options[:diff_callbacks_class] || DiffCallbacks
-      callbacks_class.new('', @diff_options)
+      callbacks_class.new(@diff_options)
     end
 
     def multi_decode_binary_string(binary_string, encodings)

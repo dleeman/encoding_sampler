@@ -520,6 +520,15 @@ describe Sampler do
 
       context 'with custom :diff_callbacks_class' do
         class CustomDiffCallbacks < DiffCallbacks
+          def initialize(opts = {})
+            super opts
+            @output = ''
+          end
+
+          def clear_buffer
+            @output = ''
+          end
+
           def line_number=(val)
             @output << " line_number "
           end
@@ -534,6 +543,10 @@ describe Sampler do
 
           def discard_b(_event)
             @output << " discard_b "
+          end
+
+          def result
+            @output
           end
         end
 
