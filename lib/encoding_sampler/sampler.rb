@@ -130,11 +130,12 @@ module EncodingSampler
       decoded_lines
     end
 
-    def diffed_strings(array_of_strings)
+    def diffed_strings(array_of_strings, line_number)
       lcs = array_of_strings.inject {|intermediate_lcs, string| Diff::LCS.LCS(intermediate_lcs, string).join }
       callbacks = diff_callbacks
       array_of_strings.map do |string|
         callbacks.clear_buffer
+        callbacks.line_number = line_number
         Diff::LCS.traverse_sequences(lcs, string, callbacks)
         callbacks.result
       end
@@ -148,8 +149,8 @@ module EncodingSampler
       @diffed_encoded_samples = encodings.inject({}) {|hash, key| hash.merge! key => []}
 
       @binary_samples.values.each_index do |i|
-        decoded_lines = encodings.map {|encoding| decoded_samples[encoding][i]}
-        diffed_encoded_lines = diffed_strings(decoded_lines)
+        decoded_lines = encodings.map {|encoding| decoded_samples[encoding][i] }
+        diffed_encoded_lines = diffed_strings(decoded_lines, i)
         encodings.each_index {|j| @diffed_encoded_samples[encodings[j]] << diffed_encoded_lines[j] }
       end
 

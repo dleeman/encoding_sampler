@@ -35,6 +35,10 @@ module EncodingSampler
       @output.clear
     end
 
+    def line_number=(val)
+      @line_number = val
+    end
+
     # Called with both strings are the same
     def match(event)
       output_matched event.old_element

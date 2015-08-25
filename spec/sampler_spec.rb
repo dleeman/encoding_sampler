@@ -503,16 +503,20 @@ describe Sampler do
 
       context 'with custom :diff_callbacks_class' do
         class CustomDiffCallbacks < DiffCallbacks
+          def line_number=(val)
+            @output << " line_number "
+          end
+
           def match(_event)
-            @output << "match "
+            @output << " match "
           end
 
           def discard_a(_event)
-            @output << "discard_a "
+            @output << " discard_a "
           end
 
           def discard_b(_event)
-            @output << "discard_b "
+            @output << " discard_b "
           end
         end
 
@@ -529,6 +533,10 @@ describe Sampler do
 
         it 'calls the discard_b method of the provided class' do
           @sampler.diffed_sample('ENCODING1').join.should include 'discard_b'
+        end
+
+        it 'calls the line_number= method of the provided class' do
+          @sampler.diffed_sample('ENCODING1').join.should include 'line_number'
         end
       end
     
